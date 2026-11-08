@@ -1,0 +1,11 @@
+mne>=1.6
+numpy
+pandas
+scipy
+scikit-learn
+torch
+matplotlib
+jupytext
+nbconvert
+ipykernel
+markdown

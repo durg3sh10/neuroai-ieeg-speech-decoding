@@ -1,0 +1,111 @@
+{
+ "subject": "sub-20",
+ "n_channels": 88,
+ "n_windows": 763,
+ "models": {
+  "LogReg (band power)": {
+   "accuracy": 0.8585,
+   "balanced_accuracy": 0.8566,
+   "f1": 0.8444,
+   "roc_auc": 0.9165
+  },
+  "CNN (raw signal)": {
+   "accuracy": 0.8218,
+   "balanced_accuracy": 0.8207,
+   "f1": 0.8068,
+   "roc_auc": 0.9032
+  },
+  "LSTM (band-power sequence)": {
+   "accuracy": 0.8231,
+   "balanced_accuracy": 0.8225,
+   "f1": 0.8096,
+   "roc_auc": 0.8584
+  }
+ },
+ "explorations": {
+  "split": {
+   "random window split": {
+    "accuracy": 0.9371,
+    "balanced_accuracy": 0.9359,
+    "f1": 0.931,
+    "roc_auc": 0.9848
+   },
+   "leave-one-block-out": {
+    "accuracy": 0.8585,
+    "balanced_accuracy": 0.8566,
+    "f1": 0.8444,
+    "roc_auc": 0.9165
+   }
+  },
+  "bands": {
+   "delta": {
+    "accuracy": 0.7392,
+    "balanced_accuracy": 0.7355,
+    "f1": 0.7086,
+    "roc_auc": 0.815
+   },
+   "theta": {
+    "accuracy": 0.8126,
+    "balanced_accuracy": 0.8114,
+    "f1": 0.7966,
+    "roc_auc": 0.8963
+   },
+   "alpha": {
+    "accuracy": 0.7588,
+    "balanced_accuracy": 0.7572,
+    "f1": 0.7379,
+    "roc_auc": 0.8355
+   },
+   "beta": {
+    "accuracy": 0.7182,
+    "balanced_accuracy": 0.7174,
+    "f1": 0.6985,
+    "roc_auc": 0.761
+   },
+   "gamma": {
+    "accuracy": 0.7628,
+    "balanced_accuracy": 0.7604,
+    "f1": 0.7396,
+    "roc_auc": 0.841
+   },
+   "hfb": {
+    "accuracy": 0.8349,
+    "balanced_accuracy": 0.8322,
+    "f1": 0.8169,
+    "roc_auc": 0.8906
+   },
+   "all bands": {
+    "accuracy": 0.8585,
+    "balanced_accuracy": 0.8566,
+    "f1": 0.8444,
+    "roc_auc": 0.9165
+   }
+  },
+  "window": {
+   "0.5 s": {
+    "accuracy": 0.8043,
+    "balanced_accuracy": 0.8031,
+    "f1": 0.7879,
+    "roc_auc": 0.8664
+   },
+   "1.0 s": {
+    "accuracy": 0.8585,
+    "balanced_accuracy": 0.8566,
+    "f1": 0.8444,
+    "roc_auc": 0.9165
+   },
+   "2.0 s": {
+    "accuracy": 0.8874,
+    "balanced_accuracy": 0.885,
+    "f1": 0.875,
+    "roc_auc": 0.945
+   },
+   "4.0 s": {
+    "accuracy": 0.9101,
+    "balanced_accuracy": 0.9078,
+    "f1": 0.9,
+    "roc_auc": 0.9746
+   }
+  }
+ }
+}
