@@ -4,6 +4,9 @@ data/
 # PDFs (report.pdf is rebuilt with: python build_report.py; the course handout is not part of the code)
 *.pdf
 
+# LaTeX version of the report (kept locally only)
+report.tex
+
 # build leftovers
 report.html
 *.aux

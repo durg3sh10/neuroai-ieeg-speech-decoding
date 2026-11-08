@@ -2,17 +2,22 @@
 
 **ES 673 NeuroAI – Take-home assignment 5** · Durgesh Mishra · November 2026
 
+**Note on AI use:**
+
+1. I used ChatGPT for reading papers and understanding the dataset.
+2. I used Claude for code implementation and for generating graphs and plots.
+
 ## 1. Task and data
 
-In this assignment I built a decoder. It takes a short piece of intracranial EEG (iEEG) and predicts whether the
+In this assignment, I built a decoder, where it takes a short window of intracranial EEG (iEEG) and predicts whether the
 person was hearing **speech** or **non-speech** at that moment. I used the OpenNeuro dataset ds003688
-(Berezutskaya et al., 2022). In this dataset, epilepsy patients with electrodes on the brain watched a 6.5-minute
+(Berezutskaya et al., 2022). The dataset is of epilepsy patients, having electrodes attached to there brain and watching a 6.5-minute
 children's film. The sound of the film switches every 30 seconds between dialogue (speech) and music (non-speech).
-There are 7 music blocks and 6 speech blocks. The block times are given in `events.tsv`.
+There are 7 music blocks and 6 speech blocks. The block times are given in `events.tsv`. 
 
-I used participant **sub-20** (`ses-iemu`, `task-film`, `acq-clinical`, `run-1`). This participant has 96 ECoG contacts, of which 88 are good (8 are marked bad in `channels.tsv`). The signal is sampled at 512 Hz. All electrodes
-are on the left side of the brain, and 32 of them form a grid over the temporal lobe. Before choosing, I tested sixpa rticipants with a simple logistic regression decoder, sub-20 gave the clearest difference between speech and music
-in high-frequency power, so I used this one. I come back to this choice in the limitations.
+I used participant id **sub-20** (`ses-iemu`, `task-film`, `acq-clinical`, `run-1`) for the EDA, which has has 96 ECoG contacts, of which 88 are good (8 are marked bad in `channels.tsv`) labelled in the data. The signal is sampled at 512 Hz. All electrodes
+are on the left side of the brain, and 32 of them form a grid over the temporal lobe. Before choosing this particular id, I tested six participants with a simple logistic regression decoder, the id sub-20 gave the clearest difference between speech and music
+in high-frequency power.
 
 ## 2. Methods
 
@@ -58,8 +63,7 @@ uses the mean and standard deviation of the training blocks only.
   and one linear output unit on the last hidden state.
 
 I trained both networks with AdamW (learning rate 10⁻³, weight decay 10⁻²), binary cross-entropy loss, batch size 64,
-30 epochs and a fixed random seed. I fixed these settings before training and did not tune them on the held-out
-blocks.
+30 epochs and a fixed random seed. 
 
 ## 3. Results
 
@@ -118,51 +122,45 @@ almost always close to 0 or 1 (Fig. 5). It is over-confident, and so its ranking
   out pauses in the speech and the fast ups and downs of HFB power. The cost is that the decoder becomes slower to
   react.
 
-## 4. Extra credit: sound responses vs. speech responses across electrodes
+## 4. Sound responses vs. speech responses across electrodes
 
-The question here is: do all electrodes respond to speech in the same way, or do some respond to sound in general
-and others to speech in particular? To answer this, I gave every electrode two scores. Both come from its
-high-frequency (HFB) power.
+Do all electrodes respond to speech in the same way? Some may react to any sound, and others only to speech. To check
+this, I gave each electrode two scores, both based on its high-frequency (HFB) power.
 
-* **Speech score.** How much higher is HFB power during speech blocks than during music blocks? I measure this with
-  Cohen's *d*, which is the difference between the two means divided by the spread. A positive score means more
-  power during speech.
-* **Onset score.** How much does HFB power jump right after a sentence begins? The film has 67 sentences, and their
-  start times are listed in the dataset file `sound_annotation_sentences.tsv`. For each sentence I compare the power
-  in the 0.05–0.35 s after the start with the power in the 0.5 s before it. The score is again a Cohen's *d*. A
-  sentence that begins after a pause is a sudden change in the sound. So a high onset score means the electrode
-  reacts quickly to a change in sound. This is not the same as preferring speech.
+* **Speech score.** Is HFB power higher during speech than during music? I use Cohen's *d*: the difference between
+  the two averages, divided by the spread. A positive score means more power during speech.
+* **Onset score.** Does HFB power jump right after a sentence starts? The film has 67 sentences, with start times in
+  the dataset file `sound_annotation_sentences.tsv`. I compare the power just after each start (0.05–0.35 s) with
+  the power just before it (0.5 s). A sentence start is a sudden change in sound. So a high onset score means the
+  electrode reacts fast to sound changes, not that it prefers speech.
 
 ![](figures/fig7_electrode_maps.png)
 
-*Figure 7. Left and middle: the onset score and the speech score drawn at the electrode positions (`electrodes.tsv`, side view of the left hemisphere). Right: the two scores plotted against each other. Contacts in the top 8 % of either score are labelled.*
+*Figure 7. Left and middle: the onset score and the speech score at each electrode position (side view of the left hemisphere). Right: the two scores plotted against each other. The top 8 % of electrodes on either score are labelled.*
 
 ![](figures/fig8_sentence_onset.png)
 
-*Figure 8. HFB power around sentence starts (mean ± s.e.m. over 67 sentences, baseline removed). Left: the three electrodes with the highest onset score. Right: the three electrodes with the highest speech score.*
+*Figure 8. HFB power around sentence starts, averaged over 67 sentences. Left: the three electrodes with the highest onset score. Right: the three electrodes with the highest speech score.*
 
-What I found (Fig. 7):
+Results:
 
-* The speech score is high mainly on the temporal grid. Its mean there is 0.60, and the highest value is 1.85 at
-  contact T14. The other strips (frontal, parietal, parieto-occipital and sub-temporal) stay at 0.38 or below.
-  21 contacts have a score above 0.5. Only two contacts prefer music (score below −0.3).
-* The onset score picks out a different, smaller group: T07, T15, T05, T06 and P39 (scores 0.44–0.70). These
-  contacts sit in the upper, back part of the grid. The contacts with the highest speech score (T12, T22 and T21)
-  sit about 10–15 mm lower, in the middle of the superior temporal gyrus.
-* The two scores are only weakly related (r = 0.17). An electrode that reacts strongly to sound changes is not
-  necessarily one that prefers speech, and the other way round.
-* Figure 8 shows the difference in time. The onset electrodes show a sharp peak 150–250 ms after the sentence starts
-  and then partly go back down. The speech electrodes rise more slowly and stay up while the sentence goes on.
+* **Speech score.** It is high mainly on the temporal grid, with the top value 1.85 at T14. The other electrode strips
+  stay at 0.38 or below. Only two electrodes prefer music.
+* **Onset score.** It is high on a different, smaller group: T07, T15, T05, T06 and P39. These sit in the upper back
+  part of the grid. The top speech electrodes (T12, T22, T21) sit about 1 cm lower.
+* **The two scores are mostly unrelated** (r = 0.17). An electrode that reacts to sound changes does not have to
+  prefer speech.
+* **Timing (Fig. 8).** Onset electrodes show a sharp peak about 0.2 s after a sentence starts, then drop. Speech
+  electrodes rise slowly and stay high while the sentence goes on.
 
-This matches what Hamilton et al. (2018) found in the human superior temporal gyrus: a back part with short "onset"
-responses and a front part with longer "sustained" responses. In this participant, the upper back contacts work like
-detectors of sound changes, and the lower front contacts follow the speech while it goes on.
+So in this participant, the upper back electrodes detect changes in sound, while the lower electrodes follow the
+speech itself.
 
 ## 5. Interpretation and limitations
 
 * **What is decoded.** With leave-one-block-out validation, a 1-s window of iEEG can be labelled as speech or music
   with about 86 % accuracy (AUC 0.92). Most of the information is in the high-frequency power of a few temporal-lobe
-  contacts. This is what we expect from auditory cortex, so the result is easy to interpret and is not an artefact.
+  contacts. 
 * **Only 13 blocks.** The 763 windows come from only 13 separate 30-s blocks, so the real sample size is small. The
   per-block accuracies (Fig. 4) range from about 0.7 to 0.97. More data would be needed to tell the deep models
   apart. Here the simplest model wins, which is common for small iEEG datasets.
@@ -181,4 +179,4 @@ detectors of sound changes, and the lower front contacts follow the speech while
   audiovisual film. *Scientific Data* 9:91. OpenNeuro ds003688 v1.0.7.
 * Hamilton L.S., Edwards E., Chang E.F. (2018). A spatial map of onset and sustained responses to speech in the human
   superior temporal gyrus. *Current Biology* 28:1860–1871.
-* Gramfort A. et al. (2013). MEG and EEG data analysis with MNE-Python. *Frontiers in Neuroscience* 7:267.
+* Gramfort A. et al. (2013). MEG and EEG data analysis with MNE-Python. *Frontiers in Neuroscience* 
